@@ -3,25 +3,23 @@
   (:require [noir.response :refer [redirect]]
             [prismic-starter.views :as views]
             [prismic-starter.util :refer [doc-url]]
-            [io.prismic.api :refer :all]))
+            [io.prismic.api :as prismic]))
 
-(defn- api [] (get-api "http://lesbonneschoses.wroom.dev/api"))
+(defn- api [] (prismic/get-api "http://lesbonneschoses.wroom.dev/api"))
+(defn- parse-page [string] (max 1 (try (Integer/parseInt string) (catch NumberFormatException e 1))))
 
 (defn home [page]
-  (views/home (search (api) :everything {:page (max 1 (or page 1))
-                                         :pageSize 10})))
+  (views/home (prismic/search (api) :everything {:page page :pageSize 10})))
+
+(defn search [query page]
+  (let [q (str "[[:d = fulltext(document, \"" query \"")]]")]
+    (views/search query (prismic/search (api) :everything {:q q :page page :pageSize 10}))))
 
 (defn doc [id slug]
-  (let [d (get-by-id (api) id)]
-    (if (= slug (-> d :slugs first))
-      (views/doc d)
-      (redirect (doc-url d)))))
+  (let [d (prismic/get-by-id (api) id)]
+    (if (= slug (-> d :slugs first)) (views/doc d) (redirect (doc-url d)))))
 
-(defn- parse-int [string] (try
-                            (Integer/parseInt string)
-                            (catch NumberFormatException e 0)))
-
-  (defroutes app-routes
-    (GET "/" [page] (home (parse-int page)))
-    (GET "/:typ/:id/:slug" [typ id slug] (doc id slug)))
-
+(defroutes app-routes
+  (GET "/" [page] (home (parse-page page)))
+  (GET "/search" [query page] (search query (parse-page page)))
+  (GET "/:typ/:id/:slug" [typ id slug] (doc id slug)))
