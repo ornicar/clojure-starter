@@ -1,11 +1,9 @@
 (ns prismic-starter.views
   (:use hiccup.core hiccup.page hiccup.form)
-  (:require [prismic-starter.util :as util]
-            [io.prismic.render :as render]))
+  (:require [io.prismic.render :as render]))
 
-(defn- resolver [link]
-  (let [document (-> link :value :document)]
-    (str "/" (:type document) "/" (:id document) "/" (:slug document))))
+(defn doc-url [doc] (str "/" (:type doc) "/" (:id doc) "/" (or (:slug doc) (-> doc :slugs first))))
+(defn resolver [link] (doc-url (-> link :value :document)))
 
 ; components
 
@@ -23,8 +21,7 @@
         [:a.navbar-brand {:href "/"} "prismic.io Clojure starter"]]]]
      [:div.container (html args)]]))
 
-(defn- docs [ds]
-  (html [:ul (for [d ds] [:li [:a {:href (util/doc-url d)} (-> d :slugs first)]])]))
+(defn- docs [ds] (html [:ul (for [d ds] [:li [:a {:href (doc-url d)} (-> d :slugs first)]])]))
 
 (defn- paginate [res url]
   (when (> (:total_pages res) 0)
@@ -44,7 +41,7 @@
 (defn- search-form [q]
   (form-to [:get "/search"] [:input {:name "query" :value q :placeholder "Search"}]))
 
-; page views
+; pages
 
 (defn doc [d] (layout (render/document d resolver)))
 

@@ -7,7 +7,6 @@
                  [ring-server "0.3.1"]
                  [com.taoensso/timbre "3.0.0"]
                  [com.taoensso/tower "2.0.1"]
-                 [markdown-clj "0.9.41"]
                  [environ "0.4.0"]
                  [prismic "0.1.0-SNAPSHOT"]]
 

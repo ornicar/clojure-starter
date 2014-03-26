@@ -2,7 +2,6 @@
   (:use compojure.core)
   (:require [noir.response :refer [redirect]]
             [prismic-starter.views :as views]
-            [prismic-starter.util :refer [doc-url]]
             [io.prismic.api :as prismic]))
 
 (defn- api [] (prismic/get-api "http://lesbonneschoses.wroom.dev/api"))
@@ -17,7 +16,7 @@
 
 (defn doc [id slug]
   (let [d (prismic/get-by-id (api) id)]
-    (if (= slug (-> d :slugs first)) (views/doc d) (redirect (doc-url d)))))
+    (if (= slug (-> d :slugs first)) (views/doc d) (redirect (views/doc-url d)))))
 
 (defroutes app-routes
   (GET "/" [page] (home (parse-page page)))

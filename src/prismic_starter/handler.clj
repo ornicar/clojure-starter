@@ -1,7 +1,6 @@
 (ns prismic-starter.handler
   (:require [compojure.core :refer [defroutes]]
             [prismic-starter.routes :refer [app-routes]]
-            [prismic-starter.middleware :as middleware]
             [noir.util.middleware :refer [app-handler]]
             [compojure.route :as route]
             [taoensso.timbre :as timbre]
@@ -36,8 +35,6 @@
 (def app (app-handler
            ;; add your application routes here
            [app-routes default-routes]
-           ;; add custom middleware here
-           :middleware [middleware/log-request]
            ;; add access rules here
            :access-rules []
            ;; serialize/deserialize the following data formats
