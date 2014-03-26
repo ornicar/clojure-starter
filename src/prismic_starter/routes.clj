@@ -5,10 +5,11 @@
             [prismic-starter.util :refer [doc-url]]
             [io.prismic.api :refer :all]))
 
-(defn- api [] (get-api "https://lesbonneschoses.prismic.io/api"))
+(defn- api [] (get-api "http://lesbonneschoses.wroom.dev/api"))
 
-(defn home []
-  (views/home (search (api) :everything {})))
+(defn home [page]
+  (views/home (search (api) :everything {:page (max 1 (or page 1))
+                                         :pageSize 10})))
 
 (defn doc [id slug]
   (let [d (get-by-id (api) id)]
@@ -16,7 +17,11 @@
       (views/doc d)
       (redirect (doc-url d)))))
 
-(defroutes app-routes
-  (GET "/" [] (home))
-  (GET "/docs/:id/:slug" [id slug] (doc id slug)))
+(defn- parse-int [string] (try
+                            (Integer/parseInt string)
+                            (catch NumberFormatException e 0)))
+
+  (defroutes app-routes
+    (GET "/" [page] (home (parse-int page)))
+    (GET "/:typ/:id/:slug" [typ id slug] (doc id slug)))
 

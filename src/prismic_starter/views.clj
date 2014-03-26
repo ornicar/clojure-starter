@@ -6,7 +6,7 @@
 
 (defn- resolver [link]
   (let [document (-> link :value :document)]
-    (str "http://localhost/" (:type document) "/" (:id document))))
+    (str "/" (:type document) "/" (:id document) "/" (:slug document))))
 
 (defn- layout [& args]
   (html5
@@ -22,17 +22,24 @@
         [:a.navbar-brand {:href "/"} "prismic.io Clojure starter"]]]]
      [:div.container (html args)]]))
 
-(defn doc [d]
-  (prn d)
-  (layout
-    (render/document d resolver)))
+(defn doc [d] (layout (render/document d resolver)))
 
 (defn docs [ds]
-  (html
-    [:ul
-     (for [d ds]
-       [:li
-        [:a {:href (util/doc-url d)} (-> d :slugs first)]])]))
+  (html [:ul (for [d ds] [:li [:a {:href (util/doc-url d)} (-> d :slugs first)]])]))
+
+(defn paginate [res]
+  (when (> (:total_pages res) 1)
+    (let [page (:page res)
+          pager (html [:ul.pagination
+                       [:li (if (:prev_page res)
+                              [:a {:href (str "/?page=" (- page 1))} "Previous"]
+                              [:a "Previous"])]
+                       [:li [:a (str "Page " page)]]
+                       [:li (if (:next_page res)
+                              [:a {:href (str "/?page=" (+ page 1))} "Next"]
+                              [:a "Next"])]])]
+      (str pager (docs (:results res)) pager))))
+
 
 (defn home [res]
   (layout
@@ -42,4 +49,4 @@
            1 "One document found"
            (str "Showing " (:results_size res)
                 " out of " (:total_results_size res) " documents"))]
-    (docs (:results res))))
+    (paginate res)))
