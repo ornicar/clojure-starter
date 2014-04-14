@@ -8,7 +8,7 @@
                  [com.taoensso/timbre "3.0.0"]
                  [com.taoensso/tower "2.0.1"]
                  [environ "0.4.0"]
-                 [prismic "0.1.0-SNAPSHOT"]]
+                 [prismic "1.0-M3"]]
 
   :repl-options {:init-ns prismic-starter.repl}
   :plugins [[lein-ring "0.8.10"]
