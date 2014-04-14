@@ -14,8 +14,8 @@
 (defn- parse-page [string]
   (max 1 (try (Integer/parseInt string) (catch NumberFormatException e 1))))
 
-(defn- callback-url [referer]
-  (str "http://localhost:3000/oauth_callback?redirect_uri=" referer))
+(defn- callback-url [host referer]
+  (str "http://" host "/oauth_callback?redirect_uri=" referer))
 
 (defn home [page ctx]
   (views/home ctx (prismic/search (:api ctx) (:ref ctx) :everything {:page page :pageSize 10})))
@@ -32,12 +32,12 @@
 (defn- clear-token-cookie []
   (cookies/put! :access_token {:value "" :max-age 0}))
 
-(defn signin [referer]
+(defn signin [host referer]
   (let [oauth-initiate-base (:oauth_initiate (api))
         client-id (config/client-id)
         scope "master+releases"
-        referer (if (nil? referer) "http://localhost:3000" referer)
-        params (ring.util.codec/form-encode {:client_id client-id :redirect_uri (callback-url referer) :scope scope})]
+        referer (if (nil? referer) host referer)
+        params (ring.util.codec/form-encode {:client_id client-id :redirect_uri (callback-url host referer) :scope scope})]
     (redirect (str oauth-initiate-base "?" params))))
 
 (defn signout []
@@ -86,7 +86,8 @@
   (GET "/search" [query page ref] (with-ctx ref (fn[ctx] (search query (parse-page page) ctx))))
   (GET "/:typ/:id/:slug" [typ id slug ref] (with-ctx ref (fn[ctx] (doc id slug ctx))))
   (GET "/signin" [:as {headers :headers}]
-       (let [referer (get headers "referer")]
-         (signin referer)))
+       (let [referer (get headers "referer")
+             host (get headers "host")]
+         (signin host referer)))
   (GET "/signout" [] (signout))
   (GET "/oauth_callback" [code redirect_uri] (oauth-callback code redirect_uri)))
