@@ -26,8 +26,8 @@
 
 (defn doc [id slug ctx]
   (let [d (prismic/get-by-id (:api ctx) (:ref ctx) id)
-        link-resolver (-> ctx :resolver :link)]
-    (if (= slug (-> d :slugs first)) (views/doc ctx d) (redirect (link-resolver d)))))
+        doc-resolver (-> ctx :resolver :document)]
+    (if (= slug (-> d :slugs first)) (views/doc ctx d) (redirect (doc-resolver d)))))
 
 (defn- clear-token-cookie []
   (cookies/put! :access_token {:value "" :max-age 0}))
